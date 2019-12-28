@@ -86,7 +86,15 @@ case class CompileOutPaths(
      *      in the middle of compilation.
      */
     val classesName = externalClassesDir.underlying.getFileName()
-    val newClassesName = generateDirName(classesName.toString)
+    val newClassesName = generateDirName(classesName.toString) match {
+      case name if name.length > 255 =>
+        val (prefix, rest) = name.splitAt(50)
+        val (middle, suffix) = rest.splitAt(rest.length - 50)
+        s"$prefix-${middle.hashCode}-$suffix"
+      case name =>
+        name
+    }
+
     AbsolutePath(Files.createDirectories(parentInternalDir.resolve(newClassesName)).toRealPath())
   }
 
